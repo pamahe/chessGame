@@ -1,3 +1,6 @@
+from game_errors import InvalidMoveException
+
+
 class Piece:
 
     def __init__(self, name, color, pos):
@@ -9,6 +12,15 @@ class Piece:
     def display(self):
         print(self.color, self.pos)
 
+    def get_available_pos(self):
+        raise NotImplementedError
+
+    def get_path(self, new_pos):
+        raise NotImplementedError
+
+    def move(self, new_pos):
+        raise NotImplementedError
+
 
 class Pawn(Piece):
 
@@ -17,7 +29,6 @@ class Pawn(Piece):
     def __init__(self, name, color, pos):
         super().__init__(name, color, pos)
         self.symbol = "p"
-        Pawn.instances += 1
 
     def get_available_pos(self):
         available_pos = []
@@ -30,13 +41,32 @@ class Pawn(Piece):
             # if in starting pos can move 2 cases forward
             if self.pos[1] == "2":
                 available_pos.append(f"{self.pos[0]}4")
+            print(self.pos[1])
             available_pos.append(f"{self.pos[0]}{int(self.pos[1]) + 1}")
 
         return available_pos
 
+    def get_path(self, new_pos):
+        # 1 case forward
+        if self.color == "white":
+            path = [f"{self.pos[0]}{int(self.pos[1]) + 1}"]
+            # 2 case forward if starting position
+            if self.pos[1] == "2" and new_pos[1] == "4":
+                path.append(f"{self.pos[0]}{int(self.pos[1]) + 2}")
+
+        elif self.color == "black":
+            path = [f"{self.pos[0]}{int(self.pos[1]) - 1}"]
+            if self.pos[1] == "7" and new_pos[1] == "5":
+                path.append(f"{self.pos[0]}{int(self.pos[1]) - 2}")
+
+        raise NotImplementedError
+
     def move(self, new_pos):
         if new_pos in self.get_available_pos():
             self.pos = new_pos
+        else:
+            raise InvalidMoveException()
+
 
 
 class Rook(Piece):
@@ -46,7 +76,24 @@ class Rook(Piece):
     def __init__(self, name, color, pos):
         super().__init__(name, color, pos)
         self.symbol = "R"
-        Pawn.instances += 1
+
+    def get_available_pos(self):
+        column = self.pos[0]
+        row = self.pos[1]
+
+        available_pos = []
+        for c in 'abcdefgh':
+            available_pos.append(f"{c}{row}")
+        for r in '12345678':
+            available_pos.append(f"{column}{r}")
+
+        return available_pos
+
+    def get_path(self, new_pos):
+        pass
+
+    def move(self, new_pos):
+        pass
 
 
 class Knight(Piece):
@@ -56,7 +103,9 @@ class Knight(Piece):
     def __init__(self, name, color, pos):
         super().__init__(name, color, pos)
         self.symbol = "N"
-        Pawn.instances += 1
+
+    def get_available_pos(self):
+        raise NotImplementedError
 
 
 class Bishop(Piece):
@@ -66,7 +115,9 @@ class Bishop(Piece):
     def __init__(self, name, color, pos):
         super().__init__(name, color, pos)
         self.symbol = "B"
-        Pawn.instances += 1
+
+    def get_available_pos(self):
+        raise NotImplementedError
 
 
 class Queen(Piece):
@@ -76,7 +127,9 @@ class Queen(Piece):
     def __init__(self, name, color, pos):
         super().__init__(name, color, pos)
         self.symbol = "Q"
-        Pawn.instances += 1
+
+    def get_available_pos(self):
+        raise NotImplementedError
 
 
 class King(Piece):
@@ -86,4 +139,6 @@ class King(Piece):
     def __init__(self, name, color, pos):
         super().__init__(name, color, pos)
         self.symbol = "K"
-        Pawn.instances += 1
+
+    def get_available_pos(self):
+        raise NotImplementedError

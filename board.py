@@ -1,20 +1,7 @@
 import json
 
 from pieces import Pawn, Rook, Knight, Bishop, Queen, King
-
-
-class InvalidMove(Exception):
-    """Exception raised from the Board Object when
-    the player move is invalid:
-
-    -> No piece in starting pos
-    -> new_pos not reachable
-    -> nothing to capture on new_pos
-    """
-
-    def __init__(self, message):
-        self.message = message
-        super().__init__(self.message)
+from game_errors import InvalidMoveException
 
 
 class Board:
@@ -59,6 +46,12 @@ class Board:
                 return piece
         return None
 
+    def get_pieces_position(self):
+        pieces_positions = []
+        for piece in self.pieces:
+            pieces_positions.append(piece.pos)
+        return pieces_positions
+
     def transform_pawn(self, color, pos):
         new_piece = ""
         while new_piece == "":
@@ -87,23 +80,32 @@ class Board:
         pos = move.split('-')[0][1:3]
         new_pos = move.split('-')[1]
 
-        print("In function make_move")
-
+        move_done = False
         for index, piece in enumerate(self.pieces):
             if piece.color == color:
                 if piece.pos == pos:
-                    piece.pos = new_pos
-                    self.display()
+                    if new_pos in piece.get_available_pos():
 
-        self.moves[color].append(move)
+                        # Check if piece on path
+                        if piece.symbol != 'N':
+                            if any([p in self.get_pieces_position() for p in piece.get_path(new_pos)]):
+                                raise InvalidMoveException("Path blocked")
+
+                        print("making the move")
+                        self.moves[color].append(move)
+                        piece.move(new_pos)
+
+        if not move_done:
+            raise InvalidMoveException()
+
+        self.display()
 
     def make_capture(self, color, move):
         pos = move.split('-')[0][1:3]
         new_pos = move.split('x')[1]
 
-        print("In function make_capture")
-
         pawn_transformation = False
+        move_done = False
         for index, piece in enumerate(self.pieces):
             if piece.pos == new_pos:
                 self.captured_pieces[color].append(piece.symbol)
@@ -113,6 +115,9 @@ class Board:
                 if piece.symbol == 'p':
                     if new_pos[1] == "8" or new_pos[1] == "1":
                         pawn_transformation = True
+
+        if not move_done:
+            raise InvalidMoveException()
 
         self.moves[color].append(move)
 

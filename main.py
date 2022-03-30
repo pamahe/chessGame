@@ -1,8 +1,8 @@
 import json
 from itertools import cycle
 
-from pieces import Pawn, Rook, Knight, Bishop, Queen, King
 from board import Board
+from game_errors import InvalidMoveException
 
 
 def make_turn(color, board):
@@ -10,13 +10,12 @@ def make_turn(color, board):
 
     # if movement
     if '-' in move:
-        print("Function make_move")
         board.make_move(color, move)
-
     # if capture
-    if 'x' in move:
+    elif 'x' in move:
         board.make_capture(color, move)
-        pass
+    else:
+        raise InvalidMoveException()
 
 
 def run():
@@ -25,7 +24,12 @@ def run():
 
     turn_iterator = cycle(["white", "black"])
     while True:
-        make_turn(next(turn_iterator), board)
+        try:
+            make_turn(next(turn_iterator), board)
+        except InvalidMoveException as e:
+            print(e.message)
+            # That way we skip the next color and go back to the current one in make_turn
+            next(turn_iterator)
 
 
 if __name__ == '__main__':
